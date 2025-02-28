@@ -1,46 +1,284 @@
-import { useState } from "react";
-import { Button } from "../components/button"; 
-import { Input } from "../components/input"; 
-import { Card, CardContent } from "../components/card";
-import { Timer } from "@/components/ui/timer";
+import React, { useState } from 'react';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import Timer from './components/timer/timer.jsx';
+import './styles.css';
 
-export default function WorkoutApp() {
-  const [exercises, setExercises] = useState([
-    { name: "Press de banca", sets: 3, reps: 10, weight: 50, image: "/bench_press.jpg" },
-  ]);
-  const [newExercise, setNewExercise] = useState({ name: "", sets: "", reps: "", weight: "" });
+const initialExercises = [
+  {
+    day: "DIA 1",
+    exercises: [
+      { id: '1', name: "CUADRICEPS", sets: 3, reps: 10, weight: [40, 45], notes: "3x12" },
+      { id: '2', name: "IZQUIOTIBIALES", sets: 3, reps: 10, weight: 40 },
+      { id: '3', name: "GEMELOS", sets: 3, reps: 10, weight: [50, 140] },
+      { id: '4', name: "PRENSA", sets: 3, reps: 10, weight: 110 },
+      { id: '5', name: "BICEPS CON MANC", sets: 3, reps: 10, weight: [12.5, 15] },
+      { id: '6', name: "BICEPS W", sets: 3, reps: 10, weight: 20 },
+    ]
+  },
+  {
+    day: "DIA 2",
+    exercises: [
+      { id: '7', name: "JALON AL PECHO", sets: 3, reps: 10, weight: [55, 85] },
+      { id: '8', name: "REMO EN MAQUINA", sets: 3, reps: 10, weight: 55 },
+      { id: '9', name: "REMO UN BRAZO", sets: 3, reps: 10, weight: 22.5 },
+      { id: '10', name: "PULLOVER", sets: 3, reps: 10, weight: 22.5 },
+      { id: '11', name: "VUELOS LATERALES", sets: 3, reps: 10, weight: [7.5, 10] },
+      { id: '12', name: "PRESS DE HOMBROS", sets: 3, reps: 10, weight: [5, 22.5, 25], notes: "maq" },
+    ]
+  },
+  {
+    day: "DIA 3",
+    exercises: [
+      { id: '13', name: "APERTURA", sets: 3, reps: 10, weight: [40, 45, 50] },
+      { id: '14', name: "PRESS PLANO", sets: 3, reps: 10, weight: [30, 35, 40] },
+      { id: '15', name: "PRESS INCL", sets: 3, reps: 10, weight: [15, 20, 25] },
+      { id: '16', name: "TRICEPS POLEA C/BARRA", sets: 3, reps: 15, weight: [10, 20, 25, 30] },
+      { id: '17', name: "TRICEPS EN POLEA C/SOGA", sets: 3, reps: 10, weight: [10, 20] },
+      { id: '18', name: "EXTENSION DE BRAZO", sets: 3, reps: 10, weight: 5 },
+    ]
+  }
+];
 
-  const addExercise = () => {
-    if (newExercise.name && newExercise.sets && newExercise.reps && newExercise.weight) {
-      setExercises([...exercises, { ...newExercise, image: "/default_exercise.jpg" }]);
-      setNewExercise({ name: "", sets: "", reps: "", weight: "" });
-    }
+const WorkoutApp = () => {
+  const [exercises, setExercises] = useState(initialExercises);
+  const [newExercise, setNewExercise] = useState({ id: '', name: "", sets: 0, reps: 0, weight: "" });
+  const [selectedDayIndex, setSelectedDayIndex] = useState(null);
+
+  const handleInputChange = (dayIndex, exerciseIndex, field, value) => {
+    const updatedExercises = exercises.map((day, dIdx) => {
+      if (dIdx === dayIndex) {
+        const updatedDay = {
+          ...day,
+          exercises: day.exercises.map((exercise, eIdx) => {
+            if (eIdx === exerciseIndex) {
+              return {
+                ...exercise,
+                [field]: field === 'weight' ? value.split(',').map(Number) : value
+              };
+            }
+            return exercise;
+          })
+        };
+        return updatedDay;
+      }
+      return day;
+    });
+
+    setExercises(updatedExercises);
+  };
+
+  const handleNewExerciseChange = (field, value) => {
+    setNewExercise({ ...newExercise, [field]: value, id: `${Date.now()}` });
+  };
+
+  const handleAddExercise = () => {
+    if (selectedDayIndex === null) return;
+    const updatedExercises = exercises.map((day, dIdx) => {
+      if (dIdx === selectedDayIndex) {
+        return {
+          ...day,
+          exercises: [...day.exercises, { ...newExercise, weight: newExercise.weight.split(',').map(Number), notes: "" }]
+        };
+      }
+      return day;
+    });
+
+    setExercises(updatedExercises);
+    setNewExercise({ id: '', name: "", sets: 0, reps: 0, weight: "" });
+  };
+
+  const handleRemoveExercise = (dayIndex, exerciseIndex) => {
+    const updatedExercises = exercises.map((day, dIdx) => {
+      if (dIdx === dayIndex) {
+        const updatedDay = {
+          ...day,
+          exercises: day.exercises.filter((_, eIdx) => eIdx !== exerciseIndex)
+        };
+        return updatedDay;
+      }
+      return day;
+    });
+
+    setExercises(updatedExercises);
+  };
+
+  const moveExercise = (dayIndex, exerciseIndex, direction) => {
+    const newIndex = exerciseIndex + direction;
+    if (newIndex < 0 || newIndex >= exercises[dayIndex].exercises.length) return;
+
+    const updatedExercises = exercises.map((day, dIdx) => {
+      if (dIdx === dayIndex) {
+        const updatedDay = {
+          ...day,
+          exercises: [...day.exercises]
+        };
+        const [movedExercise] = updatedDay.exercises.splice(exerciseIndex, 1);
+        updatedDay.exercises.splice(newIndex, 0, movedExercise);
+        return updatedDay;
+      }
+      return day;
+    });
+
+    setExercises(updatedExercises);
+  };
+
+  const onDragEnd = (result) => {
+    if (!result.destination) return;
+
+    const { source, destination } = result;
+    const sourceDayIndex = parseInt(source.droppableId.split('-')[1]);
+    const destinationDayIndex = parseInt(destination.droppableId.split('-')[1]);
+
+    if (sourceDayIndex !== destinationDayIndex) return;
+
+    const updatedDayExercises = Array.from(exercises[sourceDayIndex].exercises);
+    const [movedExercise] = updatedDayExercises.splice(source.index, 1);
+    updatedDayExercises.splice(destination.index, 0, movedExercise);
+
+    const updatedExercises = exercises.map((day, dIdx) => {
+      if (dIdx === sourceDayIndex) {
+        return {
+          ...day,
+          exercises: updatedDayExercises
+        };
+      }
+      return day;
+    });
+
+    setExercises(updatedExercises);
   };
 
   return (
-    <div className="p-6 max-w-xl mx-auto">
-      <h1 className="text-xl font-bold mb-4">Rutina de Entrenamiento</h1>
-      {exercises.map((exercise, index) => (
-        <Card key={index} className="mb-4">
-          <CardContent>
-            <img src={exercise.image} alt={exercise.name} className="w-full h-32 object-cover rounded mb-2" />
-            <p className="font-semibold">{exercise.name}</p>
-            <p>Series: {exercise.sets} - Reps: {exercise.reps} - Peso: {exercise.weight}kg</p>
-          </CardContent>
-        </Card>
-      ))}
-      <div className="flex gap-2 mb-4">
-        <Input placeholder="Ejercicio" value={newExercise.name} onChange={(e) => setNewExercise({ ...newExercise, name: e.target.value })} />
-        <Input placeholder="Series" type="number" value={newExercise.sets} onChange={(e) => setNewExercise({ ...newExercise, sets: e.target.value })} />
-        <Input placeholder="Reps" type="number" value={newExercise.reps} onChange={(e) => setNewExercise({ ...newExercise, reps: e.target.value })} />
-        <Input placeholder="Peso (kg)" type="number" value={newExercise.weight} onChange={(e) => setNewExercise({ ...newExercise, weight: e.target.value })} />
-      </div>
-      <Button onClick={addExercise}>Añadir Ejercicio</Button>
-      <div className="mt-6">
-        <h2 className="text-lg font-bold">Temporizador de descanso</h2>
-        <Timer />
+    <div className="container">
+      <h1 className="text-xl font-bold mb-4 centered">Rutina de Entrenamiento</h1>
+      <DragDropContext onDragEnd={onDragEnd}>
+        {exercises.map((day, dayIndex) => (
+          <div key={dayIndex}>
+            <h2 className="text-lg font-bold">{day.day}</h2>
+            <Droppable droppableId={`droppable-${dayIndex}`}>
+              {(provided) => (
+                <div ref={provided.innerRef} {...provided.droppableProps}>
+                  {day.exercises.map((exercise, exerciseIndex) => (
+                    <Draggable key={exercise.id} draggableId={exercise.id} index={exerciseIndex}>
+                      {(provided) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          className="draggable-item"
+                        >
+                          <div className="card mb-4">
+                            <div className="card-content">
+                              <p className="font-semibold">{exercise.name}</p>
+                              <div className="exercise-inputs">
+                                <div className="input-group">
+                                  <label>Series: </label>
+                                  <input
+                                    type="number"
+                                    value={exercise.sets}
+                                    onChange={(e) => handleInputChange(dayIndex, exerciseIndex, 'sets', e.target.value)}
+                                  />
+                                </div>
+                                <div className="input-group">
+                                  <label>Reps: </label>
+                                  <input
+                                    type="number"
+                                    value={exercise.reps}
+                                    onChange={(e) => handleInputChange(dayIndex, exerciseIndex, 'reps', e.target.value)}
+                                  />
+                                </div>
+                                <div className="input-group">
+                                  <label>Peso: </label>
+                                  <input
+                                    type="text"
+                                    value={Array.isArray(exercise.weight) ? exercise.weight.join(',') : exercise.weight}
+                                    onChange={(e) => handleInputChange(dayIndex, exerciseIndex, 'weight', e.target.value)}
+                                  />
+                                </div>
+                              </div>
+                              <div className="notes-group">
+                                <label>Notas: </label>
+                                <input
+                                  type="text"
+                                  value={exercise.notes || ""}
+                                  onChange={(e) => handleInputChange(dayIndex, exerciseIndex, 'notes', e.target.value)}
+                                />
+                              </div>
+                              <div className="button-container mt-2">
+                                <div className="move-buttons">
+                                  <button onClick={() => moveExercise(dayIndex, exerciseIndex, -1)} className="bg-blue-500 text-white">Subir</button>
+                                  <button onClick={() => moveExercise(dayIndex, exerciseIndex, 1)} className="bg-blue-500 text-white">Bajar</button>
+                                </div>
+                                <button onClick={() => handleRemoveExercise(dayIndex, exerciseIndex)} className="bg-red-500 text-white">Eliminar</button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+            <div className="mt-6 timer-container">
+              <h2 className="text-lg font-bold">Temporizador de descanso</h2>
+              <div className="timer">
+                <Timer />
+              </div>
+            </div>
+          </div>
+        ))}
+      </DragDropContext>
+      <div className="new-exercise-form mt-6">
+        <h3>Añadir Nuevo Ejercicio</h3>
+        <div>
+          <label>Seleccionar Día: </label>
+          <select onChange={(e) => setSelectedDayIndex(Number(e.target.value))}>
+            <option value="">Selecciona un día</option>
+            {exercises.map((day, index) => (
+              <option key={index} value={index}>{day.day}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label>Nombre: </label>
+          <input
+            type="text"
+            value={newExercise.name}
+            onChange={(e) => handleNewExerciseChange('name', e.target.value)}
+          />
+        </div>
+        <div className="exercise-inputs">
+          <div className="input-group">
+            <label>Series: </label>
+            <input
+              type="number"
+              value={newExercise.sets}
+              onChange={(e) => handleNewExerciseChange('sets', e.target.value)}
+            />
+          </div>
+          <div className="input-group">
+            <label>Reps: </label>
+            <input
+              type="number"
+              value={newExercise.reps}
+              onChange={(e) => handleNewExerciseChange('reps', e.target.value)}
+            />
+          </div>
+          <div className="input-group">
+            <label>Peso: </label>
+            <input
+              type="text"
+              value={newExercise.weight}
+              onChange={(e) => handleNewExerciseChange('weight', e.target.value)}
+            />
+          </div>
+        </div>
+        <button onClick={handleAddExercise} className="bg-green-500 text-white mt-2">Agregar Ejercicio</button>
       </div>
     </div>
   );
-}
+};
 
+export default WorkoutApp;

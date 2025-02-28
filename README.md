@@ -1,8 +1,11 @@
-# React + Vite
+# Workout App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Descripción
+Aplicación de rutina de entrenamiento que permite buscar, agregar y eliminar ejercicios, así como llevar un temporizador de descanso.
 
-Currently, two official plugins are available:
+## Instalación
+1. Clona el repositorio.
+2. Instala las dependencias con `npm install`.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Uso
+Inicia la aplicación con `npm start`.

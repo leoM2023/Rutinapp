@@ -1,0 +1,109 @@
+.container {
+  padding: 20px;
+}
+
+.text-xl {
+  font-size: 1.25rem;
+}
+
+.font-bold {
+  font-weight: bold;
+}
+
+.mb-4 {
+  margin-bottom: 1rem;
+}
+
+.card {
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.new-exercise-form {
+  margin-top: 2rem;
+}
+
+.timer {
+  margin-top: 1rem;
+}
+
+.timer-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.button {
+  padding: 0.5rem 1rem;
+  margin: 10px 0; /* Add space above and below buttons */
+}
+
+.bg-red-500 {
+  background-color: red;
+}
+
+.bg-green-500 {
+  background-color: green;
+}
+
+.bg-blue-500 {
+  background-color: blue;
+}
+
+.text-white {
+  color: white;
+}
+
+.exercise-inputs {
+  display: flex;
+  justify-content: space-between;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  margin-right: 10px;
+}
+
+.notes-group {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+}
+
+.timer .time {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.timer .row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.timer .button {
+  margin: 0 10px;
+}
+
+.draggable-item {
+  margin-bottom: 8px;
+}
+
+.button-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* Align buttons to the left */
+  gap: 50px; /* Add horizontal space between buttons */
+}
+
+.move-buttons {
+  display: flex;
+  gap: 50px; /* Add horizontal space between buttons */
+}
+
+.centered {
+  text-align: center;
+}
