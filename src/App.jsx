@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import Timer from './components/timer/timer.jsx';
 import './styles.css';
+import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 
 const initialExercises = [
   {
@@ -39,10 +40,14 @@ const initialExercises = [
   }
 ];
 
-const WorkoutApp = () => {
+const App = () => {
   const [exercises, setExercises] = useState(initialExercises);
   const [newExercise, setNewExercise] = useState({ id: '', name: "", sets: 0, reps: 0, weight: "" });
   const [selectedDayIndex, setSelectedDayIndex] = useState(null);
+
+  useEffect(() => {
+    serviceWorkerRegistration.register();
+  }, []);
 
   const handleInputChange = (dayIndex, exerciseIndex, field, value) => {
     const updatedExercises = exercises.map((day, dIdx) => {
@@ -153,8 +158,8 @@ const WorkoutApp = () => {
       <h1 className="text-xl font-bold mb-4 centered">Rutina de Entrenamiento</h1>
       <DragDropContext onDragEnd={onDragEnd}>
         {exercises.map((day, dayIndex) => (
-          <div key={dayIndex}>
-            <h2 className="text-lg font-bold">{day.day}</h2>
+          <div key={dayIndex} className="day-container centered">
+            <h2 className="text-lg font-bold centered">{day.day}</h2>
             <Droppable droppableId={`droppable-${dayIndex}`}>
               {(provided) => (
                 <div ref={provided.innerRef} {...provided.droppableProps}>
@@ -169,7 +174,7 @@ const WorkoutApp = () => {
                         >
                           <div className="card mb-4">
                             <div className="card-content">
-                              <p className="font-semibold">{exercise.name}</p>
+                              <p className="font-semibold text-left">{exercise.name}</p>
                               <div className="exercise-inputs">
                                 <div className="input-group">
                                   <label>Series: </label>
@@ -195,21 +200,24 @@ const WorkoutApp = () => {
                                     onChange={(e) => handleInputChange(dayIndex, exerciseIndex, 'weight', e.target.value)}
                                   />
                                 </div>
+                                <div className="input-group">
+                                  <label>Notas: </label>
+                                  <input
+                                    type="text"
+                                    value={exercise.notes || ""}
+                                    onChange={(e) => handleInputChange(dayIndex, exerciseIndex, 'notes', e.target.value)}
+                                  />
+                                </div>
                               </div>
-                              <div className="notes-group">
-                                <label>Notas: </label>
-                                <input
-                                  type="text"
-                                  value={exercise.notes || ""}
-                                  onChange={(e) => handleInputChange(dayIndex, exerciseIndex, 'notes', e.target.value)}
-                                />
+                              <div className="timer-small">
+                                <Timer />
                               </div>
                               <div className="button-container mt-2">
                                 <div className="move-buttons">
-                                  <button onClick={() => moveExercise(dayIndex, exerciseIndex, -1)} className="bg-blue-500 text-white">Subir</button>
-                                  <button onClick={() => moveExercise(dayIndex, exerciseIndex, 1)} className="bg-blue-500 text-white">Bajar</button>
+                                  <button onClick={() => moveExercise(dayIndex, exerciseIndex, -1)} className="btn btn-blue mr-2">Subir</button>
+                                  <button onClick={() => moveExercise(dayIndex, exerciseIndex, 1)} className="btn btn-blue">Bajar</button>
                                 </div>
-                                <button onClick={() => handleRemoveExercise(dayIndex, exerciseIndex)} className="bg-red-500 text-white">Eliminar</button>
+                                <button onClick={() => handleRemoveExercise(dayIndex, exerciseIndex)} className="btn btn-red mt-2">Eliminar</button>
                               </div>
                             </div>
                           </div>
@@ -221,12 +229,6 @@ const WorkoutApp = () => {
                 </div>
               )}
             </Droppable>
-            <div className="mt-6 timer-container">
-              <h2 className="text-lg font-bold">Temporizador de descanso</h2>
-              <div className="timer">
-                <Timer />
-              </div>
-            </div>
           </div>
         ))}
       </DragDropContext>
@@ -275,10 +277,10 @@ const WorkoutApp = () => {
             />
           </div>
         </div>
-        <button onClick={handleAddExercise} className="bg-green-500 text-white mt-2">Agregar Ejercicio</button>
+        <button onClick={handleAddExercise} className="btn btn-blue mt-2">Agregar Ejercicio</button>
       </div>
     </div>
   );
 };
 
-export default WorkoutApp;
+export default App;
